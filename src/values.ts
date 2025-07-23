@@ -10,6 +10,7 @@ export const Labels = {
     /** 正在处理 */ processing: 8990027493,
     /** 等待合并 */ waitmerge: 8990030321,
     /** 等待同步 */ waitsync: 8990030842,
+
     /** 完成 */ done: 8990031505,
 
     isProcessLabel: (number: number) =>
@@ -28,31 +29,37 @@ export const Labels = {
         Labels.isProcessLabel(number) ||
         Labels.isDoneLabel(number),
 
+    /** 重复 */ duplicate: 8990034941,
+
     /** 忽略 */ ignored: 8990032373,
     /** 拒绝/放弃 */ rejected: 8990033323,
     /** 暂无计划 */ noplan: 8990033902,
     /** 超时关闭 */ timeout: 8990034303,
     /** 第三方问题 */ thirdparty: 8990034664,
-    /** 重复 */ duplicate: 8990034941,
 
+    /** 信息补充 */ needinfo: 8990036762,
+    /** 需要复现 */ needreproduce: 8990037035,
+    /** 需要帮助 */ needhelp: 8990037735,
+
+    isDuplicateLabel: (number: number) =>
+        number === Labels.duplicate,
     isNotPlannedLabel: (number: number) =>
         number === Labels.ignored ||
         number === Labels.rejected ||
         number === Labels.noplan ||
         number === Labels.timeout ||
         number === Labels.thirdparty,
-    isDuplicateLabel: (number: number) =>
-        number === Labels.duplicate,
+    isNeedingLabel: (number: number) =>
+        number === Labels.needinfo ||
+        number === Labels.needreproduce ||
+        number === Labels.needhelp,
     isNegativeLabel: (number: number) =>
         Labels.isNotPlannedLabel(number) ||
-        Labels.isDuplicateLabel(number),
+        Labels.isDuplicateLabel(number) ||
+        Labels.isNeedingLabel(number),
 
     /** 高质量 */ highquality: 8990035596,
     /** 破坏性 */ breaking: 8990035900,
-
-    /** 信息补充 */ needinfo: 8990036762,
-    /** 需要复现 */ needreproduce: 8990037035,
-    /** 需要帮助 */ needhelp: 8990037735,
 }
 
 declare module "probot" {
