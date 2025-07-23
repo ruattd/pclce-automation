@@ -1,16 +1,16 @@
 {
-  "name": "@probot/example-vercel",
+  "name": "pclce-automation",
   "version": "1.0.0",
   "private": true,
-  "description": "Probot & Google Cloud Functions example",
+  "description": "GitHub App for PCL CE repository automation",
   "scripts": {
-    "start": "probot run ./dist/app.js",
+    "start": "npm run build && probot run ./dist/app.js",
     "build": "tsc",
     "test": "ts-node ./test/app.test.ts"
   },
-  "author": "Gregor Martynus (https://twitter.com/gr2m)",
+  "author": "任天天 (https://github.com/ruattd)",
   "license": "ISC",
-  "repository": "github:probot/example-vercel",
+  "repository": "github:ruattd/pclce-automation",
   "dependencies": {
     "probot": "^13.0.0"
   },
