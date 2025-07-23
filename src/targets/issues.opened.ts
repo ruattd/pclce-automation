@@ -1,6 +1,7 @@
 import { Context } from "probot";
 
 export default async function(context: Context<"issues.opened">) {
-    const result = context.issue({ body: `Received context: ${context}` });
-    return context.octokit.issues.createComment(result);
+    const issue = context.payload.issue;
+    context.log.info(`Issue #${issue.number} opened: ${issue.title} by ${issue.user.login}, URL: ${issue.url}`);
+    // additional logic
 }
