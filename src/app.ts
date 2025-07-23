@@ -10,5 +10,5 @@ export default (app: Probot) => {
     });
     // register event targets
     app.on("issues.opened", issuesOpened);
-    app.on("issues.labeled", issuesLabeled);
+    app.on(["issues.labeled", "issues.unlabeled"], issuesLabeled);
 };

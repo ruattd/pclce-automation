@@ -1,27 +1,75 @@
-export const labels = {
-    paused: 0, // 暂停
-    waiting: 0, // 等待
-    waitprocess: 0, // 等待处理
-    waitdep: 0, // 等待前置
-    upnext: 0, // 在即
-    processing: 0, // 正在处理
-    waitmerge: 0, // 等待合并
-    waitsync: 0, // 等待同步
-    done: 0, // 完成
+import { Context } from "probot";
 
-    ignored: 0, // 忽略
-    rejected: 0, // 拒绝/放弃
-    noplan: 0, // 暂无计划
-    duplicate: 0, // 重复
-    timeout: 0, // 超时关闭
-    thirdparty: 0, // 第三方问题
+export const Labels = {
+    /** 暂停 */ paused: 8990024418,
+    /** 等待 */ waiting: 8990025257,
+    /** 移交上游 */ upstream: 8990036378,
+    /** 等待处理 */ waitprocess: 8990026009,
+    /** 等待前置 */ waitdep: 8990026563,
+    /** 在即 */ upnext: 8990027046,
+    /** 正在处理 */ processing: 8990027493,
+    /** 等待合并 */ waitmerge: 8990030321,
+    /** 等待同步 */ waitsync: 8990030842,
+    /** 完成 */ done: 8990031505,
 
-    highquality: 0, // 高质量
-    breaking: 0, // 破坏性
-    upstream: 0, // 移交上游
-    needinfo: 0, // 需要信息
-    needreproduce: 0, // 需要复现
-    needhelp: 0, // 需要帮助
+    isProcessLabel: (number: number) =>
+        number === Labels.paused ||
+        number === Labels.waiting ||
+        number === Labels.upstream ||
+        number === Labels.waitprocess ||
+        number === Labels.waitdep ||
+        number === Labels.upnext ||
+        number === Labels.processing ||
+        number === Labels.waitmerge ||
+        number === Labels.waitsync,
+    isDoneLabel: (number: number) =>
+        number === Labels.done,
+    isPositiveLabel: (number: number) =>
+        Labels.isProcessLabel(number) ||
+        Labels.isDoneLabel(number),
+
+    /** 忽略 */ ignored: 8990032373,
+    /** 拒绝/放弃 */ rejected: 8990033323,
+    /** 暂无计划 */ noplan: 8990033902,
+    /** 超时关闭 */ timeout: 8990034303,
+    /** 第三方问题 */ thirdparty: 8990034664,
+    /** 重复 */ duplicate: 8990034941,
+
+    isNotPlannedLabel: (number: number) =>
+        number === Labels.ignored ||
+        number === Labels.rejected ||
+        number === Labels.noplan ||
+        number === Labels.timeout ||
+        number === Labels.thirdparty,
+    isDuplicateLabel: (number: number) =>
+        number === Labels.duplicate,
+    isNegativeLabel: (number: number) =>
+        Labels.isNotPlannedLabel(number) ||
+        Labels.isDuplicateLabel(number),
+
+    /** 高质量 */ highquality: 8990035596,
+    /** 破坏性 */ breaking: 8990035900,
+
+    /** 信息补充 */ needinfo: 8990036762,
+    /** 需要复现 */ needreproduce: 8990037035,
+    /** 需要帮助 */ needhelp: 8990037735,
 }
 
-export type Label = keyof typeof labels;
+declare module "probot" {
+    interface Context {
+        label: (...ids: number[]) => Promise<string[]>;
+    }
+}
+
+Context.prototype.label = async function(...ids: number[]): Promise<string[]> {
+    const context = this;
+    const repoLabels = await context.octokit.issues.listLabelsForRepo(context.repo());
+    const names = [];
+    for (const label of repoLabels.data) {
+        if (ids.includes(label.id)) {
+            names.push(label.name);
+            if (names.length === ids.length) break;
+        }
+    }
+    return names;
+};
