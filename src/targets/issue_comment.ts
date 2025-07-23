@@ -47,7 +47,7 @@ export default async function (context: Context<"issue_comment">) {
             const pl = await octokit.repos.getCollaboratorPermissionLevel(context.repo({ username: sender }));
             const permission = pl.data.permission
             console.debug(`${sender}'s permission: ${permission}`)
-            if (permission === "none") {
+            if (permission === "none" || permission === "read") {
                 console.warn("Permission denied");
                 break;
             }
