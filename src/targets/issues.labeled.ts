@@ -31,6 +31,7 @@ export default async function(context: Context<"issues.labeled" | "issues.unlabe
             await octokit.issues.update(context.issue({ state: "closed", state_reason: "completed" }));
         }
         if (Labels.isProcessLabel(labelId) && issue.state === "closed") {
+            if (issueLabelIds.includes(Labels.done)) labelsToRemove.push(Labels.done);
             console.info(`Reopening issue for process label added`);
             await octokit.issues.update(context.issue({ state: "open", state_reason: "reopened" }));
         }
