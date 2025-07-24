@@ -8,6 +8,7 @@ export const Labels = {
     /** 等待前置 */ waitdep: 8990026563,
     /** 在即 */ upnext: 8990027046,
     /** 正在处理 */ processing: 8990027493,
+    /** 复核中 */ reviewing: 8990027940,
     /** 等待合并 */ waitmerge: 8990030321,
     /** 等待同步 */ waitsync: 8990030842,
 
