@@ -1,6 +1,7 @@
 import { Context, ProbotOctokit } from "probot";
 import { Labels } from "../values";
 
+// TODO migrate to checks & mergeable state
 export default async function (context: Context<"pull_request_review.submitted">) {
     const payload = context.payload;
     const review = payload.review;
@@ -21,7 +22,7 @@ export default async function (context: Context<"pull_request_review.submitted">
                 console.info(`Processing #${issueNumber}`);
                 // add waiting merge label (self)
                 const self = Labels.waitmerge;
-                octokit.issues.addLabels(context.issue({ labels: await context.label(self) }));
+                await octokit.issues.addLabels(context.repo({ issue_number: issueNumber, labels: await context.label(self) }));
                 // remove all labels except markup and self
                 const labels = await octokit.issues.listLabelsOnIssue(context.repo({ issue_number: issueNumber }));
                 const labelsToRemove = labels.data.filter(l => !Labels.isMarkupLabelOrSelf(l.id, self));

@@ -12,7 +12,7 @@ export default async function (context: Context<"pull_request">) {
         console.debug(`Ignored non-user sender: ${sender.login} (${sender.type})`);
         return;
     }
-    // check logic
+    // check status
     const octokit = context.octokit;
     const labelsToSet = [];
     if (action === "closed") {
@@ -27,6 +27,17 @@ export default async function (context: Context<"pull_request">) {
         if (pr.mergeable) labelsToSet.push(Labels.waitmerge);
         else labelsToSet.push(Labels.reviewing);
     }
+    // count changing size
+    const changes = pr.additions + pr.deletions;
+    console.debug(`Changes: ${changes} (additions: ${pr.additions}, deletions: ${pr.deletions})`);
+    let sizeLabelId: number;
+    if (changes < 10) sizeLabelId = Labels.size_xs;
+    else if (changes < 30) sizeLabelId = Labels.size_s;
+    else if (changes < 100) sizeLabelId = Labels.size_m;
+    else if (changes < 500) sizeLabelId = Labels.size_l;
+    else if (changes < 1000) sizeLabelId = Labels.size_xl;
+    else sizeLabelId = Labels.size_xxl;
+    labelsToSet.push(sizeLabelId);
     // set label
     if (labelsToSet.length > 0) {
         const labelNames = await context.label(...labelsToSet);
