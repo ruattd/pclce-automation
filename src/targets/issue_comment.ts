@@ -12,12 +12,16 @@ export default async function (context: Context<"issue_comment">) {
         console.debug("Ignored delete action");
         return;
     }
-    // process commands
-    const content = comment.body.trim();
+    // process command
+    let content = comment.body.trim();
     if (!content.startsWith("/")) {
         console.debug("Not a command, ignored");
         return;
     }
+    // get first line
+    const firstNewlineIndex = content.indexOf("\n");
+    if (firstNewlineIndex !== -1) content = content.slice(0, firstNewlineIndex);
+    // parse command and arguments
     const commandLine = content.slice(1).trim();
     console.info(`Processing command line: ${commandLine}`);
     const split = commandLine.split(" ");
@@ -72,8 +76,7 @@ export default async function (context: Context<"issue_comment">) {
             await octokit.issues.createComment(context.issue({ body: `本 issue 与 #${dup} 重复，请参考原 issue 相关信息。` }));
             console.info(`Closing issue as duplicate of #${dup}`);
             await markIssueAsDuplicate(octokit, context.issue({ duplicate_of: dup }));
-            await octokit.issues.removeAllLabels(context.issue());
-            await octokit.issues.addLabels(context.issue({ labels: await context.label(Labels.duplicate) }));
+            await octokit.issues.setLabels(context.issue({ labels: await context.label(Labels.duplicate) }));
             break;
         default:
             console.warn(`Unknown command: ${command}`);
