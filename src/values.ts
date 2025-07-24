@@ -65,6 +65,9 @@ export const Labels = {
     isMarkupLabel: (number: number) =>
         number === Labels.highquality ||
         number === Labels.breaking,
+    isMarkupLabelOrSelf: (number: number, self: number) =>
+        number === self ||
+        Labels.isMarkupLabel(number),
 }
 
 declare module "probot" {
