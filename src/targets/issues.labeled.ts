@@ -36,9 +36,9 @@ export default async function(context: Context<"issues.labeled" | "issues.unlabe
             await updateIssue({ state: "open", state_reason: "reopened" });
         }
     }
-    // negative -> remove all labels except self; reopen issue, or close as not planned
+    // negative -> remove all labels except self & markup; reopen issue, or close as not planned
     else if (Labels.isNegativeLabel(labelId)) {
-        for (const l of issueLabelIds) if (l !== labelId) labelsToRemove.push(l);
+        for (const l of issueLabelIds) if (l !== labelId && Labels.isMarkupLabel(l)) labelsToRemove.push(l);
         if (issue.state === "open" && Labels.isNotPlannedLabel(labelId)) {
             console.info(`Closing issue as not planned`);
             await updateIssue({ state: "closed", state_reason: "not_planned" });
