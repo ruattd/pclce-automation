@@ -1,18 +1,18 @@
 import { Context } from "probot";
 
 export const Labels = {
-    /** 暂停 */ paused: 8990024418,
-    /** 等待 */ waiting: 8990025257,
-    /** 移交上游 */ upstream: 8990036378,
-    /** 等待处理 */ waitprocess: 8990026009,
-    /** 等待前置 */ waitdep: 8990026563,
-    /** 在即 */ upnext: 8990027046,
-    /** 正在处理 */ processing: 8990027493,
-    /** 复核中 */ reviewing: 8990027940,
-    /** 等待合并 */ waitmerge: 8990030321,
-    /** 等待同步 */ waitsync: 8990030842,
+    /** 暂停 */ paused: 8558220235,
+    /** 等待 */ waiting: 8743070786,
+    /** 移交上游 */ upstream: 8038525704,
+    /** 等待处理 */ waitprocess: 6820804546,
+    /** 等待前置 */ waitdep: 8020457542,
+    /** 在即 */ upnext: 8550609020,
+    /** 正在处理 */ processing: 6820804544,
+    /** 正在复核 */ reviewing: 8995103672,
+    /** 等待合并 */ waitmerge: 7911992426,
+    /** 等待同步 */ waitsync: 8552646493,
 
-    /** 完成 */ done: 8990031505,
+    /** 完成 */ done: 6820804547,
 
     isProcessLabel: (number: number) =>
         number === Labels.paused ||
@@ -30,17 +30,17 @@ export const Labels = {
         Labels.isProcessLabel(number) ||
         Labels.isDoneLabel(number),
 
-    /** 重复 */ duplicate: 8990034941,
+    /** 重复 */ duplicate: 6820804541,
 
-    /** 忽略 */ ignored: 8990032373,
-    /** 拒绝/放弃 */ rejected: 8990033323,
-    /** 暂无计划 */ noplan: 8990033902,
-    /** 超时关闭 */ timeout: 8990034303,
-    /** 第三方问题 */ thirdparty: 8990034664,
+    /** 忽略 */ ignored: 8064650117,
+    /** 拒绝/放弃 */ rejected: 6820804539,
+    /** 暂无计划 */ noplan: 8059776019,
+    /** 超时关闭 */ timeout: 8455841717,
+    /** 第三方 */ thirdparty: 8065680919,
 
-    /** 信息补充 */ needinfo: 8990036762,
-    /** 需要复现 */ needreproduce: 8990037035,
-    /** 需要帮助 */ needhelp: 8990037735,
+    /** 信息补充 */ needinfo: 6820804549,
+    /** 需要复现 */ needreproduce: 8142488319,
+    /** 需要帮助 */ needhelp: 6820804551,
 
     isDuplicateLabel: (number: number) =>
         number === Labels.duplicate,
@@ -59,8 +59,8 @@ export const Labels = {
         Labels.isDuplicateLabel(number) ||
         Labels.isNeedingLabel(number),
 
-    /** 高质量 */ highquality: 8990035596,
-    /** 破坏性 */ breaking: 8990035900,
+    /** 高质量 */ highquality: 6820804543,
+    /** 破坏性 */ breaking: 8020515630,
 
     isMarkupLabel: (number: number) =>
         number === Labels.highquality ||
@@ -69,12 +69,12 @@ export const Labels = {
         number === self ||
         Labels.isMarkupLabel(number),
 
-    size_xs: 0,
-    size_s: 8990038230,
-    size_m: 8990038550,
-    size_l: 8990038870,
-    size_xl: 8990039190,
-    size_xxl: 8990039510,
+    size_xs: 8996036458,
+    size_s: 8996039763,
+    size_m: 8996040518,
+    size_l: 8996041128,
+    size_xl: 8996041920,
+    size_xxl: 8996043407,
 }
 
 declare module "probot" {
