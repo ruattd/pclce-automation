@@ -15,23 +15,28 @@ export default async function (context: Context<"pull_request_review.submitted">
         console.info(`Setting label: ${labelName[0]}`);
         await octokit.issues.setLabels(context.issue({ labels: labelName }));
         // process referenced issues
-        const referencedIssues = await getClosingIssuesReferences(octokit, context.issue());
-        if (referencedIssues.length > 0) {
-            console.info(`Referenced issue(s): #${referencedIssues.join(", #")}`);
-            for (const issueNumber of referencedIssues) {
-                console.info(`Processing #${issueNumber}`);
-                // add waiting merge label (self)
-                const self = Labels.waitmerge;
-                await octokit.issues.addLabels(context.repo({ issue_number: issueNumber, labels: await context.label(self) }));
-                // remove all labels except markup and self
-                const labels = await octokit.issues.listLabelsOnIssue(context.repo({ issue_number: issueNumber }));
-                const labelsToRemove = labels.data.filter(l => !Labels.isMarkupLabelOrSelf(l.id, self));
-                if (labelsToRemove.length == 0) continue;
-                const labelNames = labelsToRemove.map(l => l.name);
-                console.info(`Removing label(s): ${labelNames.join(", ")}`);
-                for (const l of labelNames)
-                    await octokit.issues.removeLabel(context.repo({ issue_number: issueNumber, name: l }));
-            }
+        await markReferencedIssues(context);
+    }
+}
+
+async function markReferencedIssues(context: Context) {
+    const octokit = context.octokit;
+    const referencedIssues = await getClosingIssuesReferences(octokit, context.issue());
+    if (referencedIssues.length > 0) {
+        console.info(`Referenced issue(s): #${referencedIssues.join(", #")}`);
+        for (const issueNumber of referencedIssues) {
+            console.info(`Processing #${issueNumber}`);
+            // add waiting merge label (self)
+            const self = Labels.waitmerge;
+            await octokit.issues.addLabels(context.repo({ issue_number: issueNumber, labels: await context.label(self) }));
+            // remove all labels except markup and self
+            const labels = await octokit.issues.listLabelsOnIssue(context.repo({ issue_number: issueNumber }));
+            const labelsToRemove = labels.data.filter(l => !Labels.isMarkupLabelOrSelf(l.id, self));
+            if (labelsToRemove.length == 0) continue;
+            const labelNames = labelsToRemove.map(l => l.name);
+            console.info(`Removing label(s): ${labelNames.join(", ")}`);
+            for (const l of labelNames)
+                await octokit.issues.removeLabel(context.repo({ issue_number: issueNumber, name: l }));
         }
     }
 }

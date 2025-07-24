@@ -1,6 +1,7 @@
 import { Context, ProbotOctokit } from "probot";
 import { Labels } from "../values";
 import { TDATA } from "../data";
+import { hasWritePermission } from "../utils";
 
 export default async function (context: Context<"issue_comment">) {
     const payload = context.payload;
@@ -55,13 +56,7 @@ export default async function (context: Context<"issue_comment">) {
             break;
         case "duplicate":
             // checks
-            const pl = await octokit.repos.getCollaboratorPermissionLevel(context.repo({ username: sender }));
-            const permission = pl.data.permission
-            console.debug(`${sender}'s permission: ${permission}`)
-            if (permission === "none" || permission === "read") {
-                console.warn("Permission denied");
-                break;
-            }
+            if (!await hasWritePermission(context, sender)) break;
             if (args.length < 1) {
                 console.warn("Invalid argument");
                 break;
