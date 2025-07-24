@@ -126,22 +126,36 @@ async function markIssueAsDuplicate(
         owner,
         repo,
         issueNumber,
-        duplicateOf
+        duplicateOf,
     });
     try {
-        // unmark as duplicate if already marked
-        if (stateReason === "DUPLICATE" && currentDuplicateOf) {
-            const UNMARK_AS_DUPLICATE = `
-                mutation unmarkAsDuplicate($input: UnmarkIssueAsDuplicateInput!) {
-                    unmarkIssueAsDuplicate(input: $input) {
-                        duplicate { __typename }
+        // unmark as duplicate and reopen if already marked
+        if (stateReason === "DUPLICATE") {
+            if (currentDuplicateOf) {
+                const UNMARK_AS_DUPLICATE = `
+                    mutation unmarkAsDuplicate($input: UnmarkIssueAsDuplicateInput!) {
+                        unmarkIssueAsDuplicate(input: $input) {
+                            duplicate { __typename }
+                        }
+                    }
+                `;
+                await octokit.graphql(UNMARK_AS_DUPLICATE, {
+                    input: {
+                        duplicateId: targetIssueId,
+                        canonicalId: currentDuplicateOf.id,
+                    },
+                });
+            }
+            const REOPEN = `
+                mutation reopen($input: ReopenIssueInput!) {
+                    reopenIssue(input: $input) {
+                        issue { id }
                     }
                 }
             `;
-            await octokit.graphql(UNMARK_AS_DUPLICATE, {
+            await octokit.graphql(REOPEN, {
                 input: {
-                    duplicateId: targetIssueId,
-                    canonicalId: currentDuplicateOf.id,
+                    issueId: targetIssueId,
                 },
             });
         }
