@@ -65,6 +65,10 @@ export default async function (context: Context<"issue_comment">) {
                 console.warn(`${args[0]} is not a number`);
                 break;
             }
+            if (dup === issue.number) {
+                console.warn("Cannot mark issue as duplicate of itself");
+                break;
+            }
             await octokit.issues.createComment(context.issue({ body: `本 issue 与 #${dup} 重复，请参考原 issue 相关信息。` }));
             console.info(`Closing issue as duplicate of #${dup}`);
             await markIssueAsDuplicate(octokit, context.issue({ duplicate_of: dup }));
@@ -84,6 +88,7 @@ async function markIssueAsDuplicate(
     const repo = data.repo;
     const issueNumber = data.issue_number;
     const duplicateOf = data.duplicate_of;
+    // get issue ids
     interface GetIdsResponse {
         repository: {
             targetIssue: { id: string, stateReason?: string, duplicateOf?: { id: string } };
@@ -120,35 +125,27 @@ async function markIssueAsDuplicate(
         issueNumber,
         duplicateOf
     });
-    if (stateReason === "DUPLICATE") {
-        // 已经是 duplicate，更新 duplicateOf
-        const UPDATE_DUPLICATE_OF = `
-            mutation updateDuplicateOf($input: UpdateIssueInput!) {
-                updateIssue(input: $input) {
-                    issue {
-                        id
-                        duplicateOf { id }
+    try {
+        // unmark as duplicate if already marked
+        if (stateReason === "DUPLICATE") {
+            const UNMARK_AS_DUPLICATE = `
+                mutation unmarkAsDuplicate($input: UnmarkIssueAsDuplicateInput!) {
+                    unmarkIssueAsDuplicate(input: $input) {
+                        issue { id }
                     }
                 }
-            }
-        `;
-        await octokit.graphql(UPDATE_DUPLICATE_OF, {
-            input: {
-                id: targetIssueId,
-                duplicateOfId: canonicalIssueId,
-            },
-        });
-    } else {
-        // 正常关闭为 duplicate
+            `;
+            await octokit.graphql(UNMARK_AS_DUPLICATE, {
+                input: {
+                    duplicateId: targetIssueId
+                },
+            });
+        }
+        // close as duplicate
         const CLOSE_AS_DUPLICATE = `
             mutation closeAsDuplicate($input: CloseIssueInput!) {
                 closeIssue(input: $input) {
-                    issue {
-                        id
-                        number
-                        state
-                        stateReason
-                    }
+                    issue { id }
                 }
             }
         `;
@@ -159,5 +156,7 @@ async function markIssueAsDuplicate(
                 stateReason: "DUPLICATE",
             },
         });
+    } catch (error) {
+        console.error("Error: ", error);
     }
 }
