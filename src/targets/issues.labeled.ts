@@ -23,27 +23,28 @@ export default async function(context: Context<"issues.labeled" | "issues.unlabe
     const octokit = context.octokit;
     const issueLabelIds = issue.labels?.map(l => l.id) || [];
     const labelsToRemove = [];
-    // positive -> remove negative labels; reopen issue, or close issue if done
+    const updateIssue = (data: {}) => octokit.issues.update(context.issue(data));
+    // positive -> remove negative labels; reopen issue, or close as completed
     if (Labels.isPositiveLabel(labelId)) {
         for (const l of issueLabelIds) if (Labels.isNegativeLabel(l)) labelsToRemove.push(l);
-        if (Labels.isDoneLabel(labelId) && (issue.state === "open" || issue.state_reason !== "completed")) {
+        if ((issue.state === "open" || issue.state_reason !== "completed") && Labels.isDoneLabel(labelId)) {
             console.info(`Closing issue as completed`);
-            await octokit.issues.update(context.issue({ state: "closed", state_reason: "completed" }));
-        }
-        if (Labels.isProcessLabel(labelId) && issue.state === "closed") {
+            await updateIssue({ state: "closed", state_reason: "completed" });
+        } else if (issue.state === "closed" && Labels.isProcessLabel(labelId)) {
             if (issueLabelIds.includes(Labels.done)) labelsToRemove.push(Labels.done);
             console.info(`Reopening issue for process label added`);
-            await octokit.issues.update(context.issue({ state: "open", state_reason: "reopened" }));
+            await updateIssue({ state: "open", state_reason: "reopened" });
         }
     }
-    // negative -> remove positive labels; close issue if not planned
+    // negative -> remove all labels except self; reopen issue, or close as not planned
     else if (Labels.isNegativeLabel(labelId)) {
-        if (Labels.isNotPlannedLabel(labelId) && issue.state === "open") {
-            for (const l of issueLabelIds) if (l !== labelId) labelsToRemove.push(l);
+        for (const l of issueLabelIds) if (l !== labelId) labelsToRemove.push(l);
+        if (issue.state === "open" && Labels.isNotPlannedLabel(labelId)) {
             console.info(`Closing issue as not planned`);
-            await octokit.issues.update(context.issue({ state: "closed", state_reason: "not_planned" }));
-        } else {
-            for (const l of issueLabelIds) if (Labels.isPositiveLabel(l)) labelsToRemove.push(l);
+            await updateIssue({ state: "closed", state_reason: "not_planned" });
+        } else if (issue.state === "closed" && Labels.isNeedingLabel(labelId)) {
+            console.info(`Reopening issue for needing label added`);
+            await updateIssue({ state: "open", state_reason: "reopened" });
         }
     }
     // remove label(s)
