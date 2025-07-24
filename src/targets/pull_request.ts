@@ -17,7 +17,10 @@ export default async function (context: Context<"pull_request">) {
     const labelsToSet = [];
     if (action === "closed") {
         if (pr.merged) labelsToSet.push(Labels.done);
-        else octokit.issues.removeAllLabels(context.issue());
+        else {
+            console.info(`Removing all labels`);
+            await octokit.issues.removeAllLabels(context.issue());
+        }
     } else if (pr.draft) {
         labelsToSet.push(Labels.processing);
     } else {
