@@ -28,7 +28,8 @@ export default async function (context: Context<"pull_request_review.submitted">
                 if (labelsToRemove.length == 0) continue;
                 const labelNames = labelsToRemove.map(l => l.name);
                 console.info(`Removing label(s): ${labelNames.join(", ")}`);
-                for (const l of labelNames) await octokit.issues.removeLabel(context.issue({ name: l }));
+                for (const l of labelNames)
+                    await octokit.issues.removeLabel(context.repo({ issue_number: issueNumber, name: l }));
             }
         }
     }
