@@ -69,12 +69,12 @@ export const Labels = {
         number === self ||
         Labels.isMarkupLabel(number),
 
-    size_xs: 8996036458,
-    size_s: 8996039763,
-    size_m: 8996040518,
-    size_l: 8996041128,
-    size_xl: 8996041920,
-    size_xxl: 8996043407,
+    size_xs: 8996225707,
+    size_s: 8996226542,
+    size_m: 8996229667,
+    size_l: 8996232860,
+    size_xl: 8996233917,
+    size_xxl: 8996234474,
 }
 
 declare module "probot" {
