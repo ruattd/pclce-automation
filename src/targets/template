@@ -1,4 +1,3 @@
-// @ts-ignore
 import { Context } from "probot";
 
 export default async function (context: Context<"">) {

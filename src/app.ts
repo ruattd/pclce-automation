@@ -1,5 +1,6 @@
 import type { Probot } from "probot";
 import issuesOpened from "./targets/issues.opened";
+import issuesClosed from "./targets/issues.closed";
 import issuesLabeled from "./targets/issues.labeled";
 import issue_comment from "./targets/issue_comment";
 
@@ -11,6 +12,7 @@ export default (app: Probot) => {
     });
     // register event targets
     app.on("issues.opened", issuesOpened);
+    app.on("issues.closed", issuesClosed);
     app.on(["issues.labeled", "issues.unlabeled"], issuesLabeled);
     app.on("issue_comment", issue_comment);
 };
