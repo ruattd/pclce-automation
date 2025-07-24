@@ -4,9 +4,14 @@ import { Labels } from "../values";
 export default async function (context: Context<"issue_comment">) {
     const payload = context.payload;
     const issue = payload.issue;
+    const action = payload.action;
     const sender = payload.sender.login;
     const comment = payload.comment;
-    console.info(`#${issue.number} comment: ${comment.id} ${payload.action} by '${sender}'`);
+    console.info(`#${issue.number} comment: ${comment.id} ${action} by '${sender}'`);
+    if (action === "deleted") {
+        console.debug("Ignored delete action");
+        return;
+    }
     // process commands
     const content = comment.body.trim();
     if (!content.startsWith("/")) {
@@ -81,7 +86,7 @@ async function markIssueAsDuplicate(
     const duplicateOf = data.duplicate_of;
     interface GetIdsResponse {
         repository: {
-            targetIssue: { id: string };
+            targetIssue: { id: string, stateReason?: string, duplicateOf?: { id: string } };
             canonicalIssue: { id: string };
         };
     }
@@ -95,6 +100,8 @@ async function markIssueAsDuplicate(
             repository(owner: $owner, name: $repo) {
                 targetIssue: issue(number: $issueNumber) {
                     id
+                    stateReason
+                    duplicateOf { id }
                 }
                 canonicalIssue: issue(number: $duplicateOf) {
                     id
@@ -104,7 +111,7 @@ async function markIssueAsDuplicate(
     `;
     const {
         repository: {
-            targetIssue: { id: targetIssueId },
+            targetIssue: { id: targetIssueId, stateReason, duplicateOf: currentDuplicateOf },
             canonicalIssue: { id: canonicalIssueId },
         },
     } = await octokit.graphql<GetIdsResponse>(GET_IDS, {
@@ -113,23 +120,44 @@ async function markIssueAsDuplicate(
         issueNumber,
         duplicateOf
     });
-    const CLOSE_AS_DUPLICATE = `
-        mutation closeAsDuplicate($input: CloseIssueInput!) {
-            closeIssue(input: $input) {
-                issue {
-                    id
-                    number
-                    state
-                    stateReason
+    if (stateReason === "DUPLICATE") {
+        // 已经是 duplicate，更新 duplicateOf
+        const UPDATE_DUPLICATE_OF = `
+            mutation updateDuplicateOf($input: UpdateIssueInput!) {
+                updateIssue(input: $input) {
+                    issue {
+                        id
+                        duplicateOf { id }
+                    }
                 }
             }
-        }
-    `;
-    await octokit.graphql(CLOSE_AS_DUPLICATE, {
-        input: {
-            issueId: targetIssueId,
-            duplicateIssueId: canonicalIssueId,
-            stateReason: "DUPLICATE",
-        },
-    });
+        `;
+        await octokit.graphql(UPDATE_DUPLICATE_OF, {
+            input: {
+                id: targetIssueId,
+                duplicateOfId: canonicalIssueId,
+            },
+        });
+    } else {
+        // 正常关闭为 duplicate
+        const CLOSE_AS_DUPLICATE = `
+            mutation closeAsDuplicate($input: CloseIssueInput!) {
+                closeIssue(input: $input) {
+                    issue {
+                        id
+                        number
+                        state
+                        stateReason
+                    }
+                }
+            }
+        `;
+        await octokit.graphql(CLOSE_AS_DUPLICATE, {
+            input: {
+                issueId: targetIssueId,
+                duplicateIssueId: canonicalIssueId,
+                stateReason: "DUPLICATE",
+            },
+        });
+    }
 }
