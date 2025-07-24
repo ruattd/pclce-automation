@@ -1,5 +1,6 @@
 import { Context, ProbotOctokit } from "probot";
 import { Labels } from "../values";
+import { TDATA } from "../data";
 
 export default async function (context: Context<"issue_comment">) {
     const payload = context.payload;
@@ -53,6 +54,7 @@ export default async function (context: Context<"issue_comment">) {
             await octokit.issues.createComment(context.issue({ body: `Pong! @${sender}` }));
             break;
         case "duplicate":
+            // checks
             const pl = await octokit.repos.getCollaboratorPermissionLevel(context.repo({ username: sender }));
             const permission = pl.data.permission
             console.debug(`${sender}'s permission: ${permission}`)
@@ -73,7 +75,15 @@ export default async function (context: Context<"issue_comment">) {
                 console.warn("Cannot mark issue as duplicate of itself");
                 break;
             }
-            await octokit.issues.createComment(context.issue({ body: `本 issue 与 #${dup} 重复，请参考原 issue 相关信息。` }));
+            // start close as duplicate
+            const lastCommentId = TDATA.get(issue.number)?.lastDuplicateCommentId;
+            if (lastCommentId) {
+                console.debug(`Deleting last comment ${lastCommentId}`);
+                await octokit.issues.deleteComment(context.issue({ comment_id: lastCommentId }));
+            }
+            console.info(`Creating duplicate comment`);
+            const r = await octokit.issues.createComment(context.issue({ body: `本 issue 与 #${dup} 重复，请参考原 issue 相关信息。` }));
+            TDATA.query(issue.number).lastDuplicateCommentId = r.data.id;
             console.info(`Closing issue as duplicate of #${dup}`);
             await markIssueAsDuplicate(octokit, context.issue({ duplicate_of: dup }));
             await octokit.issues.setLabels(context.issue({ labels: await context.label(Labels.duplicate) }));
