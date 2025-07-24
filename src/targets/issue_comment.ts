@@ -127,17 +127,18 @@ async function markIssueAsDuplicate(
     });
     try {
         // unmark as duplicate if already marked
-        if (stateReason === "DUPLICATE") {
+        if (stateReason === "DUPLICATE" && currentDuplicateOf) {
             const UNMARK_AS_DUPLICATE = `
                 mutation unmarkAsDuplicate($input: UnmarkIssueAsDuplicateInput!) {
                     unmarkIssueAsDuplicate(input: $input) {
-                        issue { id }
+                        duplicate { __typename }
                     }
                 }
             `;
             await octokit.graphql(UNMARK_AS_DUPLICATE, {
                 input: {
-                    duplicateId: targetIssueId
+                    duplicateId: targetIssueId,
+                    canonicalId: currentDuplicateOf.id,
                 },
             });
         }
