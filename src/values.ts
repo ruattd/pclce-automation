@@ -60,6 +60,10 @@ export const Labels = {
 
     /** 高质量 */ highquality: 8990035596,
     /** 破坏性 */ breaking: 8990035900,
+
+    isMarkupLabel: (number: number) =>
+        number === Labels.highquality ||
+        number === Labels.breaking,
 }
 
 declare module "probot" {
