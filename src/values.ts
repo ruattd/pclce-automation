@@ -3,27 +3,23 @@ import { Context } from "probot";
 export const Labels = {
     /** 暂停 */ paused: 8558220235,
     /** 等待 */ waiting: 8743070786,
-    /** 移交上游 */ upstream: 8038525704,
     /** 等待处理 */ waitprocess: 6820804546,
     /** 等待前置 */ waitdep: 8020457542,
     /** 在即 */ upnext: 8550609020,
     /** 正在处理 */ processing: 6820804544,
     /** 正在复核 */ reviewing: 8995103672,
     /** 等待合并 */ waitmerge: 7911992426,
-    /** 等待同步 */ waitsync: 8552646493,
 
     /** 完成 */ done: 6820804547,
 
     isProcessLabel: (number: number) =>
         number === Labels.paused ||
         number === Labels.waiting ||
-        number === Labels.upstream ||
         number === Labels.waitprocess ||
         number === Labels.waitdep ||
         number === Labels.upnext ||
         number === Labels.processing ||
-        number === Labels.waitmerge ||
-        number === Labels.waitsync,
+        number === Labels.waitmerge,
     isDoneLabel: (number: number) =>
         number === Labels.done,
     isPositiveLabel: (number: number) =>
@@ -37,6 +33,7 @@ export const Labels = {
     /** 暂无计划 */ noplan: 8059776019,
     /** 超时关闭 */ timeout: 8455841717,
     /** 第三方 */ thirdparty: 8065680919,
+    /** 移交上游 */ upstream: 8038525704,
 
     /** 信息补充 */ needinfo: 6820804549,
     /** 需要复现 */ needreproduce: 8142488319,
@@ -49,7 +46,8 @@ export const Labels = {
         number === Labels.rejected ||
         number === Labels.noplan ||
         number === Labels.timeout ||
-        number === Labels.thirdparty,
+        number === Labels.thirdparty ||
+        number === Labels.upstream,
     isNeedingLabel: (number: number) =>
         number === Labels.needinfo ||
         number === Labels.needreproduce ||
@@ -61,10 +59,12 @@ export const Labels = {
 
     /** 高质量 */ highquality: 6820804543,
     /** 破坏性 */ breaking: 8020515630,
+    /** 等待同步 */ waitsync: 8552646493,
 
     isMarkupLabel: (number: number) =>
         number === Labels.highquality ||
-        number === Labels.breaking,
+        number === Labels.breaking ||
+        number === Labels.waitsync,
     isMarkupLabelOrSelf: (number: number, self: number) =>
         number === self ||
         Labels.isMarkupLabel(number),
