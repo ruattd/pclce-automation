@@ -4,8 +4,7 @@ import issuesClosed from "./targets/issues.closed";
 import issuesReopened from "./targets/issues.reopened";
 import issuesLabeled from "./targets/issues.labeled";
 import issueCommentAll from "./targets/issue_comment";
-import prAll from "./targets/pull_request";
-import prReviewSubmitted from "./targets/pull_request_review.submitted";
+import { prAll, prReview } from "./targets/pull_request";
 
 export default (app: Probot) => {
     app.log.info("Hello from PCL CE Automation");
@@ -21,7 +20,7 @@ export default (app: Probot) => {
     app.on("issue_comment", issueCommentAll);
     app.on([
         "pull_request.closed", "pull_request.opened", "pull_request.reopened",
-        "pull_request.ready_for_review", "pull_request.converted_to_draft", "pull_request.synchronize"
+        "pull_request.ready_for_review", "pull_request.converted_to_draft", "pull_request.synchronize",
     ], prAll);
-    app.on("pull_request_review.submitted", prReviewSubmitted);
+    app.on("pull_request_review", prReview);
 };
