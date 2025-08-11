@@ -75,6 +75,14 @@ export const Labels = {
     size_l: 8996232860,
     size_xl: 8996233917,
     size_xxl: 8996234474,
+
+    isSizeLabel: (number: number) =>
+        number === Labels.size_xs ||
+        number === Labels.size_s ||
+        number === Labels.size_m ||
+        number === Labels.size_l ||
+        number === Labels.size_xl ||
+        number === Labels.size_xxl,
 }
 
 declare module "probot" {
