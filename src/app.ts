@@ -19,7 +19,7 @@ export default (app: Probot) => {
     app.on(["issues.labeled", "issues.unlabeled"], issuesLabeled);
     app.on("issue_comment", issueCommentAll);
     app.on([
-        "pull_request.closed", "pull_request.opened", "pull_request.reopened",
+        "pull_request.closed", "pull_request.opened", "pull_request.reopened", "pull_request.edited",
         "pull_request.ready_for_review", "pull_request.converted_to_draft", "pull_request.synchronize",
     ], prAll);
     app.on("pull_request_review", prReview);
