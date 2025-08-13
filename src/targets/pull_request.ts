@@ -18,12 +18,14 @@ async function pr(context: Context<"pull_request" | "pull_request_review">, isRe
     // check status
     const octokit = context.octokit;
     const labelsToSet = [];
+    let bypassSetLabels = false;
     let labelToSetOnIssues: number | undefined;
     if (action === "closed") {
         if ((pr as any).merged) labelsToSet.push(Labels.done);
         else {
             console.info(`Removing all labels`);
             await octokit.issues.removeAllLabels(context.issue());
+            bypassSetLabels = true;
             labelToSetOnIssues = Labels.waitprocess;
         }
     } else if (pr.draft) {
@@ -38,6 +40,12 @@ async function pr(context: Context<"pull_request" | "pull_request_review">, isRe
             labelToSetOnIssues = Labels.processing;
         }
     }
+    // set label on referenced issues
+    if (labelToSetOnIssues) {
+        console.info(`Setting label on issues: ${labelToSetOnIssues}`);
+        await markReferencedIssues(context, labelToSetOnIssues);
+    }
+    if (bypassSetLabels) return;
     // count changing size
     if (isReviewEvent) {
         const labels = (await octokit.issues.listLabelsOnIssue(context.issue())).data;
@@ -65,11 +73,6 @@ async function pr(context: Context<"pull_request" | "pull_request_review">, isRe
         console.info(`Setting label(s): ${labelNames.join(", ")}`);
         await octokit.issues.setLabels(context.issue({ labels: labelNames }));
     }
-    // set label on referenced issues
-    if (labelToSetOnIssues) {
-        console.info(`Setting label on issues: ${labelToSetOnIssues}`);
-        await markReferencedIssues(context, labelToSetOnIssues);
-    }
 }
 
 async function checkMergeable(context: Context<"pull_request">) {
@@ -79,18 +82,12 @@ async function checkMergeable(context: Context<"pull_request">) {
     const reviews = await octokit.pulls.listReviews(context.repo({
         pull_number: pr.number
     }));
-    // check if there is at least one approval and no request changes
-    let hasApproval = false;
-    let hasRequestChanges = false;
-    for (const review of reviews.data) {
-        if (review.state === "APPROVED") {
-            hasApproval = true;
-        } else if (review.state === "CHANGES_REQUESTED") {
-            hasRequestChanges = true;
-            break;
-        }
+    // check if the latest review with reaction is approval
+    for (const review of reviews.data.reverse()) {
+        if (review.state === "APPROVED") return true;
+        else if (review.state === "CHANGES_REQUESTED") return false;
     }
-    return hasApproval && !hasRequestChanges;
+    return false;
 }
 
 async function markReferencedIssues(context: Context, labelId: number) {
