@@ -1,5 +1,5 @@
 import { Context } from "probot";
-import { Labels } from "../values";
+import { Labels } from "../values.js";
 
 export default async function (context: Context<"issues.reopened">) {
     const payload = context.payload;

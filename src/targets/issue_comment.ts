@@ -1,7 +1,7 @@
 import { Context, ProbotOctokit } from "probot";
-import { Labels } from "../values";
-import { TDATA } from "../data";
-import { hasWritePermission } from "../utils";
+import { Labels } from "../values.js";
+import { TDATA } from "../data.js";
+import { hasWritePermission } from "../utils.js";
 
 export default async function (context: Context<"issue_comment">) {
     const payload = context.payload;
