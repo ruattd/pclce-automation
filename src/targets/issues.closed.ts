@@ -1,6 +1,6 @@
 import { Context } from "probot";
-import { Labels } from "../values";
-import {hasWritePermission, isNotUserEvent} from "../utils";
+import { Labels } from "../values.js";
+import {hasWritePermission, isNotUserEvent} from "../utils.js";
 
 export default async function (context: Context<"issues.closed">) {
     const payload = context.payload;

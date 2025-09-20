@@ -1,10 +1,10 @@
 import type { Probot } from "probot";
-import issuesOpened from "./targets/issues.opened";
-import issuesClosed from "./targets/issues.closed";
-import issuesReopened from "./targets/issues.reopened";
-import issuesLabeled from "./targets/issues.labeled";
-import issueCommentAll from "./targets/issue_comment";
-import { prAll, prReview } from "./targets/pull_request";
+import issuesOpened from "./targets/issues.opened.js";
+import issuesClosed from "./targets/issues.closed.js";
+import issuesReopened from "./targets/issues.reopened.js";
+import issuesLabeled from "./targets/issues.labeled.js";
+import issueCommentAll from "./targets/issue_comment.js";
+import { prAll, prReview } from "./targets/pull_request.js";
 
 export default (app: Probot) => {
     app.log.info("Hello from PCL CE Automation");

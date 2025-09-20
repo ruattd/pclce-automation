@@ -1,5 +1,5 @@
 import { Context, ProbotOctokit } from "probot";
-import { Labels } from "../values";
+import { Labels } from "../values.js";
 
 export const prAll = async (context: Context<"pull_request">) => await pr(context, false);
 export const prReview = async (context: Context<"pull_request_review">) => await pr(context, true);

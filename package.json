@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "description": "GitHub App for PCL CE repository automation",
+  "type": "module",
   "scripts": {
     "start": "npm run build && probot run ./dist/app.js",
     "build": "tsc",
