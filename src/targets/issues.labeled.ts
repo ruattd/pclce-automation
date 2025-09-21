@@ -20,11 +20,11 @@ export default async function(context: Context<"issues.labeled" | "issues.unlabe
     }
     // handle label event
     if (isUnlabeled) return;
-    const octokit = context.octokit;
+    const octokit = context.octokit.rest;
     const issueLabelIds = issue.labels?.map(l => l.id) || [];
     const labelsToRemove = [];
     const updateIssue = (data: {}) => octokit.issues.update(context.issue(data));
-    // positive -> remove negative labels; reopen issue, or close as completed
+    // positive -> remove negative labels; reopen the issue, or close as completed
     if (Labels.isPositiveLabel(labelId)) {
         for (const l of issueLabelIds) if (Labels.isNegativeLabel(l)) labelsToRemove.push(l);
         if ((issue.state === "open" || issue.state_reason !== "completed") && Labels.isDoneLabel(labelId)) {
@@ -36,7 +36,7 @@ export default async function(context: Context<"issues.labeled" | "issues.unlabe
             await updateIssue({ state: "open", state_reason: "reopened" });
         }
     }
-    // negative -> remove all labels except self & markup; reopen issue, or close as not planned
+    // negative -> remove all labels except self and markup; reopen the issue, or close as not planned
     else if (Labels.isNegativeLabel(labelId)) {
         for (const l of issueLabelIds) if (l !== labelId && !Labels.isMarkupLabel(l)) labelsToRemove.push(l);
         if (issue.state === "open" && Labels.isNotPlannedLabel(labelId)) {

@@ -4,7 +4,7 @@ import { Labels } from "../values.js";
 export default async function (context: Context<"issues.reopened">) {
     const payload = context.payload;
     const issue = payload.issue;
-    console.info(`#${issue.number} reopened: ${issue.title} [${issue.user.login}]`);
+    console.info(`#${issue.number} reopened: ${issue.title} [${issue.user!.login}]`);
     // check sender type
     const sender = payload.sender;
     if (sender.type !== "User") {
@@ -12,8 +12,8 @@ export default async function (context: Context<"issues.reopened">) {
         return;
     }
     // remove not planned & duplicate label
-    const octokit = context.octokit;
-    const issueLabelIds = issue.labels?.map(l => l.id) || [];
+    const octokit = context.octokit.rest;
+    const issueLabelIds = issue.labels?.map(l => l!.id) || [];
     const labelsToRemove = [];
     for (const l of issueLabelIds)
         if (Labels.isNotPlannedLabel(l) || Labels.isDuplicateLabel(l)) labelsToRemove.push(l);

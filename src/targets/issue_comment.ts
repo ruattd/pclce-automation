@@ -49,7 +49,7 @@ export default async function (context: Context<"issue_comment">) {
     }
     console.info(`Result: ${command} ["${args.join('", "')}"]`);
     // command logic
-    const octokit = context.octokit;
+    const octokit = context.octokit.rest;
     switch (command) {
         case "ping":
             await octokit.issues.createComment(context.issue({ body: `Pong! @${sender}` }));
@@ -80,7 +80,7 @@ export default async function (context: Context<"issue_comment">) {
             const r = await octokit.issues.createComment(context.issue({ body: `本 issue 与 #${dup} 重复，请参考原 issue 相关信息。` }));
             TDATA.query(issue.number).lastDuplicateCommentId = r.data.id;
             console.info(`Closing issue as duplicate of #${dup}`);
-            await markIssueAsDuplicate(octokit, context.issue({ duplicate_of: dup }));
+            await markIssueAsDuplicate(context.octokit, context.issue({ duplicate_of: dup }));
             await octokit.issues.setLabels(context.issue({ labels: await context.label(Labels.duplicate) }));
             break;
         default:

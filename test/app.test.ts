@@ -7,7 +7,7 @@ nock.disableNetConnect();
 import { Probot, ProbotOctokit } from "probot";
 import { EmitterWebhookEvent } from "@octokit/webhooks";
 
-import app from "../src/app";
+import app from "../src/app.js";
 
 let probot: Probot;
 const test = suite("app");

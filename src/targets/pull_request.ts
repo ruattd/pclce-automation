@@ -8,15 +8,15 @@ async function pr(context: Context<"pull_request" | "pull_request_review">, isRe
     const payload = context.payload;
     const action = payload.action;
     const pr = payload.pull_request;
-    console.info(`#${pr.number} ${action}: ${pr.title} [${pr.user.login}]`);
+    console.info(`#${pr.number} ${action}: ${pr.title} [${pr.user!.login}]`);
     // check sender type
-    const sender = payload.sender;
+    const sender = payload.sender!;
     if (sender.type !== "User") {
         console.debug(`Ignored non-user sender: ${sender.login} (${sender.type})`);
         return;
     }
     // check status
-    const octokit = context.octokit;
+    const octokit = context.octokit.rest;
     const labelsToSet = [];
     let bypassSetLabels = false;
     let labelToSetOnIssues: number | undefined;
@@ -76,7 +76,7 @@ async function pr(context: Context<"pull_request" | "pull_request_review">, isRe
 }
 
 async function checkMergeable(context: Context<"pull_request">) {
-    const octokit = context.octokit;
+    const octokit = context.octokit.rest;
     const pr = context.payload.pull_request;
     // get all reviews
     const reviews = await octokit.pulls.listReviews(context.repo({
@@ -91,8 +91,8 @@ async function checkMergeable(context: Context<"pull_request">) {
 }
 
 async function markReferencedIssues(context: Context, labelId: number) {
-    const octokit = context.octokit;
-    const referencedIssues = await getClosingIssuesReferences(octokit, context.issue());
+    const octokit = context.octokit.rest;
+    const referencedIssues = await getClosingIssuesReferences(context.octokit, context.issue());
     if (referencedIssues.length > 0) {
         console.info(`Referenced issue(s): #${referencedIssues.join(", #")}`);
         for (const issueNumber of referencedIssues) {
