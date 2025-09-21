@@ -10,7 +10,7 @@ export default async function (context: Context<"issues.closed">) {
     const sender = payload.sender;
     if (isNotUserEvent(sender)) return;
     // add label
-    const octokit = context.octokit;
+    const octokit = context.octokit.rest;
     let labelToSet: number | undefined;
     switch (issue.state_reason) {
         case "completed":

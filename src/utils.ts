@@ -1,7 +1,7 @@
 import { Context } from "probot";
 
 export async function hasWritePermission(context: Context, username: string) {
-    const pl = await context.octokit.repos.getCollaboratorPermissionLevel(context.repo({ username }));
+    const pl = await context.octokit.rest.repos.getCollaboratorPermissionLevel(context.repo({ username }));
     const permission = pl.data.permission
     const output = `${username}'s permission: ${permission}`;
     if (permission === "write" || permission === "admin") {
