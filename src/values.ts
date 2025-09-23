@@ -34,6 +34,7 @@ export const Labels = {
     /** 超时关闭 */ timeout: 8455841717,
     /** 第三方 */ thirdparty: 8065680919,
     /** 移交上游 */ upstream: 8038525704,
+    /** 网络问题 */ network: 9336307598,
 
     /** 信息补充 */ needinfo: 6820804549,
     /** 需要复现 */ needreproduce: 8142488319,
@@ -47,7 +48,8 @@ export const Labels = {
         number === Labels.noplan ||
         number === Labels.timeout ||
         number === Labels.thirdparty ||
-        number === Labels.upstream,
+        number === Labels.upstream ||
+        number === Labels.network,
     isNeedingLabel: (number: number) =>
         number === Labels.needinfo ||
         number === Labels.needreproduce ||
@@ -93,7 +95,7 @@ declare module "probot" {
 
 Context.prototype.label = async function(...ids: number[]): Promise<string[]> {
     const context = this;
-    const repoLabels = await context.octokit.issues.listLabelsForRepo(context.repo());
+    const repoLabels = await context.octokit.rest.issues.listLabelsForRepo(context.repo());
     const names = [];
     for (const label of repoLabels.data) {
         if (ids.includes(label.id)) {
