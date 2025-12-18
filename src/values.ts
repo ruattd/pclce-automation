@@ -95,7 +95,7 @@ declare module "probot" {
 
 Context.prototype.label = async function(...ids: number[]): Promise<string[]> {
     const context = this;
-    const repoLabels = await context.octokit.rest.issues.listLabelsForRepo(context.repo());
+    const repoLabels = await context.octokit.rest.issues.listLabelsForRepo(context.repo({ per_page: 100 }));
     const names = [];
     for (const label of repoLabels.data) {
         if (ids.includes(label.id)) {
