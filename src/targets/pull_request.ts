@@ -75,19 +75,53 @@ async function pr(context: Context<"pull_request" | "pull_request_review">, isRe
     }
 }
 
+interface PullRequestGraphQLResponse {
+    repository: {
+        pullRequest: {
+            mergeStateStatus: 'BLOCKED' | 'BEHIND' | 'CLEAN' | 'DIRTY' | 'DRAFT' | 'HAS_HOOKS' | 'UNKNOWN' | 'UNSTABLE';
+            reviewDecision: 'APPROVED' | 'CHANGES_REQUESTED' | 'REVIEW_REQUIRED' | null;
+            mergeable: 'CONFLICTING' | 'MERGEABLE' | 'UNKNOWN';
+        } | null;
+    };
+}
+
 async function checkMergeable(context: Context<"pull_request">) {
-    const octokit = context.octokit.rest;
-    const pr = context.payload.pull_request;
-    // get all reviews
-    const reviews = await octokit.pulls.listReviews(context.repo({
-        pull_number: pr.number
-    }));
-    // check if the latest review with reaction is approval
-    for (const review of reviews.data.reverse()) {
-        if (review.state === "APPROVED") return true;
-        else if (review.state === "CHANGES_REQUESTED") return false;
+    const { owner, repo } = context.repo();
+    const prNumber = context.payload.pull_request.number;
+
+    const query = `
+        query ($owner: String!, $repo: String!, $prNumber: Int!) {
+            repository(owner: $owner, name: $repo) {
+                pullRequest(number: $prNumber) {
+                    mergeStateStatus
+                    reviewDecision
+                    mergeable
+                }
+            }
+        }
+    `;
+
+    const response = await context.octokit.graphql<PullRequestGraphQLResponse>(
+        query,
+        {
+            owner,
+            repo,
+            prNumber,
+        }
+    );
+
+    const pr = response.repository.pullRequest;
+
+    if (!pr) {
+        return false;
     }
-    return false;
+
+    if (pr.mergeStateStatus === 'CLEAN') {
+        return true;
+    }
+
+    return pr.reviewDecision === 'APPROVED' &&
+        pr.mergeable === 'MERGEABLE';
 }
 
 async function markReferencedIssues(context: Context, labelId: number) {
